@@ -156,30 +156,4 @@ public class Protocol {
     // Prevents instantiation
     private Protocol() {}
 
-
-    // Basic testing of functionality
-    // TODO: More robust testing will have to do be done
-    public static void main (String args[]) {
-        // Validating a username
-        String username = "JohnDoe123";
-        if (Protocol.isValidUsername(username)) {
-            System.out.println("Username is valid!");
-        }
-
-// Creating messages
-        System.out.println(Protocol.standardMessage("Alice", "Hello everyone!"));
-        System.out.println(Protocol.joinMessage("Bob"));
-        System.out.println(Protocol.leaveMessage("Charlie"));
-
-// Parsing commands
-        String whisper = "/whisper John Hello there!";
-        String[] parsed = Protocol.parseWhisperCommand(whisper);
-        if (parsed != null) {
-            System.out.println("Recipient: " + parsed[0]);
-            System.out.println("Message: " + parsed[1]);
-        }
-
-// Getting help
-        System.out.println(Protocol.getHelpMessage());
-    }
 }
