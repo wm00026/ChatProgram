@@ -159,7 +159,6 @@ public class Protocol {
 
     // Basic testing of functionality
     // TODO: More robust testing will have to do be done
-    // TODO: JUnit Tests?
     public static void main (String args[]) {
         // Validating a username
         String username = "JohnDoe123";
