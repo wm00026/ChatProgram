@@ -9,7 +9,7 @@ public class Protocol {
     public static final String STANDARD_MSG_FORMAT = "[%s] %s";
     public static final String MSG_JOIN_FORMAT = "[%s has joined!]";
     public static final String MSG_LEAVE_FORMAT = "[%s has left]";
-    public static final String MSG_ERROR_FORMAT = "Command not recognized. Use either /list or /quit";
+    public static final String MSG_ERROR_FORMAT = "Command not recognized. Type /help for a list of commands.";
     public static final String MSG_WHISPER_FORMAT = "[%s (whisper to %s)] %s";
     public static final String MSG_WHISPER_RECEIVED_FORMAT = "[%s whispers] %s";
 

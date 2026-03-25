@@ -44,6 +44,10 @@ public class Message {
         this.timestamp = LocalDateTime.now();
     }
 
+    /**
+     * Formats the message based on its type and content
+     * @return Formatted message string, with time, content, and sender (if applicable)
+     */
     public String format() {
         String time = timestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         switch(type) {
@@ -64,4 +68,5 @@ public class Message {
     public String getContent() { return content; }
     public MessageType getType() { return type; }
     public String getRecipient() { return recipient; }
+    public LocalDateTime getTimestamp() { return timestamp; }
 }
