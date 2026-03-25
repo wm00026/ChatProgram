@@ -19,7 +19,7 @@ public class User {
      * Constructor for the User Class
      * @param username the name of the user
      * @param socket the socket used for connection
-     * @param out the PrintWriter out
+     * @param out the output stream.
      */
     public User(String username, Socket socket, PrintWriter out) {
         this.username = username;

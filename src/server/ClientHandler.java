@@ -39,6 +39,7 @@ public class ClientHandler implements Runnable {
         this.connectedUsers = connectedUsers;
     }
 
+    // Main loop for handling client communication
     @Override
     public void run() {
         try {
@@ -85,6 +86,7 @@ public class ClientHandler implements Runnable {
      * Handshake: Prompts client for username, valdiates, and checks uniqueness.
      * returns true once a valid username is accepted
      * false if client disconnected or fails too many times
+     * @throws IOException if an I/O error occurs while reading from client
      */
 
     private boolean performHandshake() throws IOException {
@@ -117,6 +119,10 @@ public class ClientHandler implements Runnable {
         return false;
     }
 
+    /**
+     * Handles a public message: formats, broadcasts to others, and echoes back to sender.
+     * @param text the content of the message
+     */
     private void handlePublicMessage(String text) {
         Message msg = new Message(username, text, MessageType.PUBLIC);
         String formatted = msg.format();
@@ -130,10 +136,11 @@ public class ClientHandler implements Runnable {
         });
     }
 
-    /**
-     * Dispatchs a command to appropriate handler.
-     */
-
+        /**
+         * Handles a command input. Directs to appropriate handler, or returns an unknown command.
+         * @param input the command input from client
+         * @return true; either using the command or priting an error message and continuing the session.
+         */
         private boolean handleCommand(String input) {
         if (input.equalsIgnoreCase(Protocol.CMD_LEAVE)) {
             return handleQuit();
@@ -158,6 +165,11 @@ public class ClientHandler implements Runnable {
         out.println(Protocol.errorMessage());
         return true;
     }
+
+    
+    /**
+     * Handlers: Each command has a handler to keep code organized and manage command formatting.
+     */
 
     private void handleList() {
         StringBuilder sb = new StringBuilder("Connected users (").append(connectedUsers.size()).append("): ");
@@ -201,6 +213,11 @@ public class ClientHandler implements Runnable {
         recipient.getOut().println(Protocol.whisperReceivedMessage(username, whisperText));
     }
 
+    /**
+     * Broadcasts a system message to all users, except the excluded username.
+     * @param content the content of the message.
+     * @param excludeUserName the username to exclude fromr receiving the message
+     */
     private void broadcastSystemMessage(String content, String excludeUserName) {
         Message msg = new Message("SYSTEM", content, MessageType.SYSTEM);
         String formatted = msg.format();
@@ -212,6 +229,9 @@ public class ClientHandler implements Runnable {
         });
     }
 
+        /**
+         * Handler disconnecting a user
+         */
         private void disconnect() {
         if (username != null) {
             connectedUsers.remove(username);

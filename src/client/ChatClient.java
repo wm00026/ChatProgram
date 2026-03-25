@@ -12,7 +12,9 @@ import java.net.UnknownHostException;
 /**
  * ChatClient
  *
- * Connects to the ChatServer and runs two threads
+ * Connects to the ChatServer and runs two threads:
+ * A listener thread that listens for messages from server and prints to console
+ * A sender thread that handles I/O from user.
 */
 public class ChatClient {
 
@@ -29,10 +31,12 @@ public class ChatClient {
     /**
      * Opens the socket connection and wires up the streams.
      * Throws if the server isn't reachable.
+     * @throws IOException if an I/O error occurs when creating the socket or streams
      */
     public void connect() throws IOException {
         socket = new Socket(SERVER_HOST, SERVER_PORT);
         // autoFlush=true so every println() sends immediately
+
         out = new PrintWriter(socket.getOutputStream(), true);
         in  = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         running = true;
@@ -44,15 +48,17 @@ public class ChatClient {
      * current (main) thread. Returns when the session ends.
      */
     public void start() {
-        // --- Thread 1: Listener ---
         Thread listenerThread = new Thread(this::listenForMessages, "listener");
         listenerThread.setDaemon(true);
         listenerThread.start();
 
-        // --- Thread 2: Sender (runs on the main thread) ---
         sendMessages();
     }
 
+    /**
+     * Listens for messages from server and prints to console.
+     * Handles disconnect from server IF server is shutdown.
+     */
     private void listenForMessages() {
         try {
             String message;
@@ -69,6 +75,9 @@ public class ChatClient {
         }
     }
 
+    /**
+     * Handles user messages to be sent to server.
+     */
     private void sendMessages() {
         try (BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in))) {
             String input;
@@ -93,6 +102,9 @@ public class ChatClient {
     }
 
 
+    /**
+     * Handles shutting down client.
+     */
     private void shutdown() {
         if (!running) return; // already shutting down
         running = false;
@@ -105,6 +117,7 @@ public class ChatClient {
         }
     }
 
+    // Main method t start client.
     public static void main(String[] args) {
         ChatClient client = new ChatClient();
         try {

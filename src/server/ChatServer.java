@@ -67,8 +67,8 @@ public class ChatServer {
 
     /**
      * Sends a message to a specific user
-     * @param message
-     * @param recipient
+     * @param message the messege to sender
+     * @param recipient the person receiving the message
      * @return
      */
     public boolean sendToUser(Message message, String recipient) {
@@ -81,6 +81,7 @@ public class ChatServer {
         return true;
     }
 
+    // Gets the user list, separated by commas.
     public String getUserList() {
         if (connectedUsers.isEmpty()) {
             return "No users connected.";
@@ -91,6 +92,7 @@ public class ChatServer {
         return sb.toString();
     }
 
+    // Runs the chat server
     public static void main(String[] args) {
         new ChatServer().start();
     }
