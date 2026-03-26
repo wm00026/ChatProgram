@@ -117,7 +117,7 @@ public class ChatClient {
         }
     }
 
-    // Main method t start client.
+    // Main method to start client.
     public static void main(String[] args) {
         ChatClient client = new ChatClient();
         try {
