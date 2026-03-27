@@ -34,6 +34,8 @@ public class ClientHandler implements Runnable {
     private PrintWriter out;
     private BufferedReader in;
 
+    private static final int MAX_MESSAGE_LENGTH = 500; 
+
     public ClientHandler(Socket socket, ConcurrentHashMap<String, User> connectedUsers) {
         this.socket = socket;
         this.connectedUsers = connectedUsers;
@@ -67,6 +69,10 @@ public class ClientHandler implements Runnable {
                 rawInput = rawInput.trim();
                 if (rawInput.isEmpty()) continue;
 
+                if (rawInput.length() > MAX_MESSAGE_LENGTH) {
+                    out.println("Message too long (max: " + MAX_MESSAGE_LENGTH + "chars)");
+                }
+
                 if (Protocol.isCommand(rawInput)) {
                     boolean shouldContinue = handleCommand(rawInput);
                     if (!shouldContinue) break;
@@ -90,7 +96,7 @@ public class ClientHandler implements Runnable {
      */
 
     private boolean performHandshake() throws IOException {
-        out.println("Enter a username (3-18 chars, letters/numbers/underscores):");
+        out.println("Enter a username (3-" + Protocol.MAX_USERNAME_LENGTH + " chars, letters/numbers/underscores):");
 
         String candidate;
         int attempts = 0;
@@ -106,7 +112,7 @@ public class ClientHandler implements Runnable {
             }
 
             if (connectedUsers.containsKey(candidate)) {
-                out.println("Username" + candidate + " already taken. Try again:");
+                out.println("Username '" + candidate + "' is already taken. Try again:");
                 attempts++;
                 continue;
             }
@@ -178,7 +184,7 @@ public class ClientHandler implements Runnable {
     }
 
     private boolean handleQuit() {
-        out.print("Goodbye, " + username + "!");
+        out.println("Goodbye, " + username + "!");
         return false; 
     }
 
