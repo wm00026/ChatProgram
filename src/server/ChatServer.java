@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The main chat server:
@@ -17,11 +20,21 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatServer {
 
 
-    private static final int PORT = 12345;
+    private  final int PORT;
+
+    public ChatServer() {
+        this.PORT = 12345;
+    }
+
+    public ChatServer(int port) {
+        this.PORT = port;
+    }
 
     // Shared user registry: username -> User object
 
     private final ConcurrentHashMap<String, User> connectedUsers = new ConcurrentHashMap<>();
+    private static final int MAX_THREADS = 50;
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS);
 
     /**
      * Starts the chat server: opens a ServerSocket and listens for incoming connections.
@@ -40,12 +53,32 @@ public class ChatServer {
 
                 // Each client gets its own handler
                 ClientHandler handler = new ClientHandler(clientSocket, connectedUsers);
-                Thread thread = new Thread(handler);
-                thread.setDaemon(true);
-                thread.start();
+                threadPool.execute(handler);
             }
         } catch (IOException e) {
-            System.err.println("Error starting server: " + e.getMessage());
+            System.err.println("Server stopped: " + e.getMessage());
+        } finally {
+            shutdown();
+        }
+    }
+
+    /**
+     * Shuts down the server and thread pool gracefully
+     */
+    private void shutdown() {
+        System.out.println("Shutting down thread pool...");
+        threadPool.shutdown();
+        try {
+            if (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
+                threadPool.shutdownNow();
+                System.out.println("Thread pool forced to shutdown.");
+            }
+            else {
+                System.out.println("Thread pool shutdown complete.");
+            }
+        } catch (InterruptedException e) {
+            threadPool.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 
