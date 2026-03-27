@@ -20,7 +20,15 @@ import java.util.concurrent.TimeUnit;
 public class ChatServer {
 
 
-    private static final int PORT = 12345;
+    private  final int PORT;
+
+    public ChatServer() {
+        this.PORT = 12345;
+    }
+
+    public ChatServer(int port) {
+        this.PORT = port;
+    }
 
     // Shared user registry: username -> User object
 
