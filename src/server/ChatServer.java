@@ -2,6 +2,7 @@ package server;
 
 import common.Message;
 import common.User;
+import server.ChatRoom;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -20,21 +21,29 @@ import java.util.concurrent.TimeUnit;
 public class ChatServer {
 
 
-    private  final int PORT;
+    private final int PORT;
+
+    private final ConcurrentHashMap<String, ChatRoom> rooms = new ConcurrentHashMap<>();
+    private static final String DEFAULT_ROOM = "lobby";
 
     public ChatServer() {
         this.PORT = 12345;
+        rooms.put(DEFAULT_ROOM, new ChatRoom(DEFAULT_ROOM, connectedUsers));
     }
 
     public ChatServer(int port) {
         this.PORT = port;
+        rooms.put(DEFAULT_ROOM, new ChatRoom(DEFAULT_ROOM, connectedUsers));
     }
 
     // Shared user registry: username -> User object
 
     private final ConcurrentHashMap<String, User> connectedUsers = new ConcurrentHashMap<>();
+
     private static final int MAX_THREADS = 50;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS);
+
+
 
     /**
      * Starts the chat server: opens a ServerSocket and listens for incoming connections.
@@ -51,9 +60,9 @@ public class ChatServer {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("New connection from: " + clientSocket.getInetAddress());
 
-                // Each client gets its own handler
-                ClientHandler handler = new ClientHandler(clientSocket, connectedUsers);
-                threadPool.execute(handler);
+                ChatRoom defaultRoom = rooms.get(DEFAULT_ROOM);
+                ClientHandler handler = new ClientHandler(clientSocket, connectedUsers, rooms, defaultRoom);
+                threadPool.submit(handler);
             }
         } catch (IOException e) {
             System.err.println("Server stopped: " + e.getMessage());
@@ -123,6 +132,10 @@ public class ChatServer {
         StringBuilder sb = new StringBuilder("Connected users: ");
         sb.append(String.join(", ", connectedUsers.keySet()));
         return sb.toString();
+    }
+
+    public ChatRoom getRoom(String roomName) {
+        return rooms.get(roomName);
     }
 
     // Runs the chat server

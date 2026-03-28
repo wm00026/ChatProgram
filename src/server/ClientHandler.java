@@ -4,6 +4,8 @@ import common.Message;
 import common.Message.MessageType;
 import common.User;
 import common.Protocol;
+import server.ChatRoom;
+import server.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 /**
  * ClientHandler
@@ -34,11 +37,18 @@ public class ClientHandler implements Runnable {
     private PrintWriter out;
     private BufferedReader in;
 
+    private final ConcurrentHashMap<String, ChatRoom> rooms;
+    private ChatRoom currentRoom;
+    private final Logger logger = new Logger();
+
     private static final int MAX_MESSAGE_LENGTH = 500; 
 
-    public ClientHandler(Socket socket, ConcurrentHashMap<String, User> connectedUsers) {
+    public ClientHandler(Socket socket, ConcurrentHashMap<String, User> connectedUsers, 
+        ConcurrentHashMap<String, ChatRoom> rooms, ChatRoom defaultRoom) {
         this.socket = socket;
         this.connectedUsers = connectedUsers;
+        this.rooms = rooms;
+        this.currentRoom = defaultRoom;
     }
 
     // Main loop for handling client communication
@@ -59,6 +69,7 @@ public class ClientHandler implements Runnable {
             // Register the user
             user = new User(username, socket, out);
             connectedUsers.put(username, user);
+            currentRoom.addMember(username);
 
             out.println("Welcome to the chat, " + username +"! Type /help for commands.");
             broadcastSystemMessage(Protocol.joinMessage(username), username);
@@ -132,14 +143,10 @@ public class ClientHandler implements Runnable {
     private void handlePublicMessage(String text) {
         Message msg = new Message(username, text, MessageType.PUBLIC);
         String formatted = msg.format();
+        logger.log(currentRoom.getName(), formatted);
 
         out.println(formatted); // Echo back
-
-        connectedUsers.forEach((name, u) -> {
-            if (!name.equals(username) && u.isActive()) {
-                u.getOut().println(formatted);
-            }
-        });
+        currentRoom.broadcast(formatted, username);
     }
 
         /**
@@ -225,14 +232,7 @@ public class ClientHandler implements Runnable {
      * @param excludeUserName the username to exclude fromr receiving the message
      */
     private void broadcastSystemMessage(String content, String excludeUserName) {
-        Message msg = new Message("SYSTEM", content, MessageType.SYSTEM);
-        String formatted = msg.format();
-
-        connectedUsers.forEach((name, u) -> {
-            if (!name.equals(excludeUserName) && u.isActive()) {
-                u.getOut().println(formatted);
-            }
-        });
+        currentRoom.broadcastSystemMessage(content, excludeUserName);
     }
 
         /**
@@ -243,6 +243,8 @@ public class ClientHandler implements Runnable {
             connectedUsers.remove(username);
             if (user != null) user.setActive(false);
  
+            currentRoom.removeMember(username);
+
             // Only broadcast if other users are still connected.
             if (!connectedUsers.isEmpty()) {
                 broadcastSystemMessage(Protocol.leaveMessage(username), username);
@@ -250,7 +252,10 @@ public class ClientHandler implements Runnable {
  
             System.out.println(username + " has disconnected.");
         }
+        
+        logger.close();
         closeQuietly();
+
     }
  
     /** Closes the socket, swallowing any IOException. */
