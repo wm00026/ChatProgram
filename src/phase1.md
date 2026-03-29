@@ -1,4 +1,5 @@
-# Phase I - Building the Basics
+# Phase I 
+*Building the Basics*
 
 ## Goal
 The goal of Phase I was to have the program *work* and to test functionality. The build was a basic chat program that could handle users chatting in a general channel, with commands and personal messaging.
