@@ -12,12 +12,16 @@ public class Protocol {
     public static final String MSG_ERROR_FORMAT = "Command not recognized. Type /help for a list of commands.";
     public static final String MSG_WHISPER_FORMAT = "[%s (whisper to %s)] %s";
     public static final String MSG_WHISPER_RECEIVED_FORMAT = "[%s whispers] %s";
+    public static final String MSG_ROOM_JOIN_FORMAT = "[%s has joined %s]";
+    public static final String MSG_ROOM_LEAVE_FORMAT = "[%s has left %s]";
 
     // Commands
     public static final String CMD_LIST_USERS = "/list";
     public static final String CMD_LEAVE = "/quit";
     public static final String CMD_WHISPER = "/whisper"; // Stretch goal
     public static final String CMD_HELP = "/help";
+    public static final String CMD_JOIN = "/join";
+    public static final String CMD_ROOMS = "/rooms";
 
     // Username validation constants
     public static final int MIN_USERNAME_LENGTH = 3;
@@ -139,6 +143,23 @@ public class Protocol {
         return new String[]{recipient, whisperMessage};
     }
 
+    public static String roomJoinMessage(String username, String roomName) {
+        return String.format(MSG_ROOM_JOIN_FORMAT, username, roomName);
+    }
+
+    public static String roomLeaveMessage(String username, String roomName) {
+        return String.format(MSG_ROOM_LEAVE_FORMAT, username, roomName);
+    }
+
+    public static String parseJoinCommand(String input) {
+        if (input == null || !input.toLowerCase().startsWith(CMD_JOIN)) {
+            return null;
+        }
+
+        String roomName = input.substring(CMD_JOIN.length()).trim();
+        return roomName.isEmpty() ? null : roomName;
+    }
+
     /**
      * Gets the help message with available commands
      * @return Help message string
@@ -150,6 +171,8 @@ public class Protocol {
         help.append("  ").append(CMD_LEAVE).append(" - Exit the chat\n");
         help.append("  ").append(CMD_WHISPER).append(" <username> <message> - Send private message\n");
         help.append("  ").append(CMD_HELP).append(" - Show this help message\n");
+        help.append("  ").append(CMD_JOIN).append(" <room> - Join or create a room\n");
+        help.append("  ").append(CMD_ROOMS).append(" - List all rooms\n");
         return help.toString();
     }
 

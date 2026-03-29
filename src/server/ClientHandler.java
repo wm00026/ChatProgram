@@ -40,15 +40,17 @@ public class ClientHandler implements Runnable {
     private final ConcurrentHashMap<String, ChatRoom> rooms;
     private ChatRoom currentRoom;
     private final Logger logger = new Logger();
+    private final ChatServer server;
 
     private static final int MAX_MESSAGE_LENGTH = 500; 
 
     public ClientHandler(Socket socket, ConcurrentHashMap<String, User> connectedUsers, 
-        ConcurrentHashMap<String, ChatRoom> rooms, ChatRoom defaultRoom) {
+        ConcurrentHashMap<String, ChatRoom> rooms, ChatRoom defaultRoom, ChatServer server) {
         this.socket = socket;
         this.connectedUsers = connectedUsers;
         this.rooms = rooms;
         this.currentRoom = defaultRoom;
+        this.server= server;
     }
 
     // Main loop for handling client communication
@@ -173,6 +175,16 @@ public class ClientHandler implements Runnable {
             handleWhisper(input);
             return true;
         }
+
+        if(input.toLowerCase().startsWith(Protocol.CMD_JOIN)) {
+            handleJoin(input);
+            return true;
+        }
+
+        if (input.equalsIgnoreCase(Protocol.CMD_ROOMS)) {
+            handleRooms();
+            return true;
+        }
  
         // Unknown command — tell the user but keep the session alive.
         out.println(Protocol.errorMessage());
@@ -226,6 +238,37 @@ public class ClientHandler implements Runnable {
         recipient.getOut().println(Protocol.whisperReceivedMessage(username, whisperText));
     }
 
+    private void handleJoin(String input) {
+        String roomName = Protocol.parseJoinCommand(input);
+
+        if (roomName == null) {
+            out.println("Usage /join <roomname>");
+            return;
+        }
+
+        if (roomName.equalsIgnoreCase(currentRoom.getName())) {
+            out.println("You are already in room " + roomName + ".");
+            return;
+        }
+
+        String oldRoomName = currentRoom.getName();
+        currentRoom.broadcastSystemMessage(Protocol.roomLeaveMessage(username, oldRoomName), username);
+        currentRoom.removeMember(username);
+
+        ChatRoom newRoom = server.getOrCreateRoom(roomName);
+        newRoom.addMember(username);
+        currentRoom = newRoom;
+        
+        out.println("You joined " + roomName + ".");
+        currentRoom.broadcastSystemMessage(Protocol.roomJoinMessage(username, roomName), username);
+        logger.log(currentRoom.getName(), username + "joined" + roomName);
+
+    }
+
+    private void handleRooms() {
+        out.println(server.getRoomList());
+    }
+ 
     /**
      * Broadcasts a system message to all users, except the excluded username.
      * @param content the content of the message.

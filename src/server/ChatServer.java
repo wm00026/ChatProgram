@@ -2,7 +2,6 @@ package server;
 
 import common.Message;
 import common.User;
-import server.ChatRoom;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -61,7 +60,7 @@ public class ChatServer {
                 System.out.println("New connection from: " + clientSocket.getInetAddress());
 
                 ChatRoom defaultRoom = rooms.get(DEFAULT_ROOM);
-                ClientHandler handler = new ClientHandler(clientSocket, connectedUsers, rooms, defaultRoom);
+                ClientHandler handler = new ClientHandler(clientSocket, connectedUsers, rooms, defaultRoom, this);
                 threadPool.submit(handler);
             }
         } catch (IOException e) {
@@ -136,6 +135,28 @@ public class ChatServer {
 
     public ChatRoom getRoom(String roomName) {
         return rooms.get(roomName);
+    }
+
+    /**
+     * Either gets an existing chat room by name OR
+     * creates a new one if it doesn't exist
+     * @param roomName the name of the room
+     * @return the existing or new ChatRoom instance
+     */
+   
+    public ChatRoom getOrCreateRoom(String roomName) {
+        return rooms.computeIfAbsent(roomName, name -> new ChatRoom(name, connectedUsers));
+    }
+
+    /**
+     * Gets a list of all existing chat rooms
+     * @return
+     */
+    public String getRoomList() {
+        StringBuilder sb = new StringBuilder("Rooms (").append(rooms.size()).append("): ");
+        rooms.forEach((name, room) ->
+            sb.append(name).append("(").append(room.getMemberCount()).append(") "));
+        return sb.toString().trim();
     }
 
     // Runs the chat server
