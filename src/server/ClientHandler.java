@@ -4,8 +4,6 @@ import common.Message;
 import common.Message.MessageType;
 import common.User;
 import common.Protocol;
-import server.ChatRoom;
-import server.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Set;
 
 /**
  * ClientHandler
@@ -73,6 +70,11 @@ public class ClientHandler implements Runnable {
             connectedUsers.put(username, user);
             currentRoom.addMember(username);
 
+            server.claimAdmin(username);
+            if (server.isAdmin(username)) {
+                out.println("[Server] You are the admin");
+            }
+
             out.println("Welcome to the chat, " + username +"! Type /help for commands.");
             broadcastSystemMessage(Protocol.joinMessage(username), username);
 
@@ -130,6 +132,12 @@ public class ClientHandler implements Runnable {
                 continue;
             }
 
+            if (server.isBanned(candidate)) {
+                out.println("Username '" + candidate + " ' is banned from server");
+                attempts++;
+                continue;
+            }
+
             username = candidate;
             return true;
         }
@@ -143,6 +151,10 @@ public class ClientHandler implements Runnable {
      * @param text the content of the message
      */
     private void handlePublicMessage(String text) {
+        if (server.isMuted(username)) {
+            return;
+        }
+
         Message msg = new Message(username, text, MessageType.PUBLIC);
         String formatted = msg.format();
         logger.log(currentRoom.getName(), formatted);
@@ -183,6 +195,26 @@ public class ClientHandler implements Runnable {
 
         if (input.equalsIgnoreCase(Protocol.CMD_ROOMS)) {
             handleRooms();
+            return true;
+        }
+
+        if (input.toLowerCase().startsWith(Protocol.CMD_KICK)) {
+            handleKick(input);
+            return true;
+        }
+
+        if (input.toLowerCase().startsWith(Protocol.CMD_BAN)) {
+            handleBan(input);
+            return true;
+        }
+
+        if (input.toLowerCase().startsWith(Protocol.CMD_MUTE)) {
+            handleMute(input);
+            return true;
+        }
+
+        if (input.toLowerCase().startsWith(Protocol.CMD_UNMUTE)) {
+            handleUnmute(input);
             return true;
         }
  
@@ -268,6 +300,107 @@ public class ClientHandler implements Runnable {
     private void handleRooms() {
         out.println(server.getRoomList());
     }
+
+    private void handleKick(String input) {
+        if (!server.isAdmin(username)) {
+            out.println("You don't have permission to do that");
+            return;
+        }
+
+        String target = Protocol.parseTargetCommand(input, Protocol.CMD_KICK);
+        if (target == null) {
+            out.println("Usage: /kick <username>");
+            return;
+        }
+
+        if (target.equalsIgnoreCase(username)) {
+            out.println("You can't kick yourself");
+            return;
+        }
+
+        User targetUser = connectedUsers.get(target);
+        if (targetUser == null) {
+            out.println("User '" + target + "' not found.");
+            return;
+        }
+
+        targetUser.getOut().println(String.format(Protocol.MSG_KICKED_FORMAT, target, username));
+        server.kickUser(target);
+        out.println("Kicked " + target + ".");
+        currentRoom.broadcastSystemMessage(target + " was kicked by " + username + ".", username);
+    }
+
+    private void handleBan(String input) {
+        if (!server.isAdmin(username)) {
+            out.println("You don't have permission to do that");
+            return;
+        }
+
+        String target = Protocol.parseTargetCommand(input, Protocol.CMD_BAN);
+        if (target == null) {
+            out.println("Usage: /ban <username>");
+            return;
+        }
+
+        if (target.equalsIgnoreCase(username)) {
+            out.println("You can't ban yourself");
+            return;
+        }
+
+        User targetUser = connectedUsers.get(target);
+        if (targetUser == null) {
+            out.println("User '" + target + "' not found.");
+            return;
+        }
+
+        targetUser.getOut().println(String.format(Protocol.MSG_BANNED_FORMAT, target, username));
+        server.banUser(target);
+        out.println("Banned " + target + ".");
+        currentRoom.broadcastSystemMessage(target + " was banned by " + username + ".", username);
+    }
+
+    private void handleMute(String input) {
+        if (!server.isAdmin(username)) {
+            out.println("You don't have permission to handle that");
+            return;
+        }
+
+        String target = Protocol.parseTargetCommand(input, Protocol.CMD_MUTE);
+        if (target == null) {
+            out.println("Usage: /mute <username>");
+            return;
+        }
+
+        if (target.equalsIgnoreCase(username)) {
+            out.println("You can't mute yourself");
+            return;
+        }
+
+        if (!server.muteUser(target)) {
+            out.println("User '" + target + "' not found.");
+            return;
+        }
+
+        out.println(String.format(Protocol.MSG_MUTED_FORMAT, target));
+        currentRoom.broadcastSystemMessage(target + " has been muted.", username);
+    }
+
+    private void handleUnmute(String input) {
+    if (!server.isAdmin(username)) {
+        out.println("You don't have permission to do that.");
+        return;
+    }
+
+    String target = Protocol.parseTargetCommand(input, Protocol.CMD_UNMUTE);
+    if (target == null) {
+        out.println("Usage: /unmute <username>");
+        return;
+    }
+
+    server.unmuteUser(target);
+    out.println(String.format(Protocol.MSG_UNMUTED_FORMAT, target));
+    currentRoom.broadcastSystemMessage(target + " has been unmuted.", username);
+    } 
  
     /**
      * Broadcasts a system message to all users, except the excluded username.

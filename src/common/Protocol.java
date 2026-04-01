@@ -15,6 +15,12 @@ public class Protocol {
     public static final String MSG_ROOM_JOIN_FORMAT = "[%s has joined %s]";
     public static final String MSG_ROOM_LEAVE_FORMAT = "[%s has left %s]";
 
+    // Admin Message Structure:
+    public static final String MSG_KICKED_FORMAT = "[%s has been kicked by %s]";
+    public static final String MSG_BANNED_FORMAT = "[%s has been banned by %s]";
+    public static final String MSG_MUTED_FORMAT = "[%s has been muted]";
+    public static final String MSG_UNMUTED_FORMAT = "[%s has been unmuted]";
+
     // Commands
     public static final String CMD_LIST_USERS = "/list";
     public static final String CMD_LEAVE = "/quit";
@@ -22,6 +28,12 @@ public class Protocol {
     public static final String CMD_HELP = "/help";
     public static final String CMD_JOIN = "/join";
     public static final String CMD_ROOMS = "/rooms";
+
+    // Admin commands
+    public static final String CMD_KICK = "/kick";
+    public static final String CMD_BAN = "/ban";
+    public static final String CMD_MUTE = "/mute";
+    public static final String CMD_UNMUTE = "/unmute";
 
     // Username validation constants
     public static final int MIN_USERNAME_LENGTH = 3;
@@ -143,14 +155,31 @@ public class Protocol {
         return new String[]{recipient, whisperMessage};
     }
 
+    /**
+     * Formats a room join message
+     * @param username the username of the user joining the room
+     * @param roomName the name of the room the user is joining
+     * @return the formatted room join message
+     */
     public static String roomJoinMessage(String username, String roomName) {
         return String.format(MSG_ROOM_JOIN_FORMAT, username, roomName);
     }
 
+    /**
+     * Formats a room leave message
+     * @param username the username of the user leaving the room
+     * @param roomName the name of the room the user is leaving
+     * @return the formatted room leave message
+     */
     public static String roomLeaveMessage(String username, String roomName) {
         return String.format(MSG_ROOM_LEAVE_FORMAT, username, roomName);
     }
 
+    /**
+     * parses a join command to extract the room name.
+     * @param input the full command input from the user
+     * @return the room name if the command is valid, or null if its invalid or missing roomName.
+     */
     public static String parseJoinCommand(String input) {
         if (input == null || !input.toLowerCase().startsWith(CMD_JOIN)) {
             return null;
@@ -158,6 +187,15 @@ public class Protocol {
 
         String roomName = input.substring(CMD_JOIN.length()).trim();
         return roomName.isEmpty() ? null : roomName;
+    }
+
+    public static String parseTargetCommand(String input, String cmd) {
+        if (input == null || !input.toLowerCase().startsWith(cmd)) {
+            return null;
+        }
+
+        String target = input.substring(cmd.length()).trim();
+        return target.isEmpty() ? null : target;
     }
 
     /**
@@ -173,6 +211,10 @@ public class Protocol {
         help.append("  ").append(CMD_HELP).append(" - Show this help message\n");
         help.append("  ").append(CMD_JOIN).append(" <room> - Join or create a room\n");
         help.append("  ").append(CMD_ROOMS).append(" - List all rooms\n");
+        help.append("  ").append(CMD_KICK).append(" <user> - Kick a user (admin only)\n");
+        help.append("  ").append(CMD_BAN).append(" <user> - Ban a user (admin only)\n");
+        help.append("  ").append(CMD_MUTE).append(" <user> - Mute a user (admin only)\n");
+        help.append("  ").append(CMD_UNMUTE).append(" <user> - Unmute a user (admin only)\n");
         return help.toString();
     }
 

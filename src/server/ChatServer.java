@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 /**
  * The main chat server:
@@ -38,6 +39,10 @@ public class ChatServer {
     // Shared user registry: username -> User object
 
     private final ConcurrentHashMap<String, User> connectedUsers = new ConcurrentHashMap<>();
+
+    private String adminUsername = null;
+    private final Set<String> mutedUsers = ConcurrentHashMap.newKeySet();
+    private final Set<String> bannedUsers = ConcurrentHashMap.newKeySet();
 
     private static final int MAX_THREADS = 50;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS);
@@ -150,13 +155,76 @@ public class ChatServer {
 
     /**
      * Gets a list of all existing chat rooms
-     * @return
+     * @return the formatted room list string
      */
     public String getRoomList() {
         StringBuilder sb = new StringBuilder("Rooms (").append(rooms.size()).append("): ");
         rooms.forEach((name, room) ->
             sb.append(name).append("(").append(room.getMemberCount()).append(") "));
         return sb.toString().trim();
+    }
+
+    /**
+     * Claims admin privileges for a user if no admin exists yet.
+     * @param username
+     */
+    public synchronized void claimAdmin(String username) {
+        if (adminUsername == null) {
+            adminUsername = username;
+            System.out.println("Admin claimed by: " + username);
+        }
+    }
+
+    // Verifys if a given username is the current admin
+    public boolean isAdmin(String username) {
+        return username != null && username.equals(adminUsername);
+    }
+
+    // Verifies if a given username is banned
+    public boolean isBanned(String username) {
+        return bannedUsers.contains(username);
+    }
+
+    // Mutes a user; adding them to the mutedUsers set
+    public boolean muteUser(String target) {
+        if (connectedUsers.containsKey(target)) {
+            mutedUsers.add(target);
+            return true;
+        }
+        return false;
+    }
+
+    // Unmutes a user; removing them from the mutedUsers set
+    public void unmuteUser(String target) {
+        mutedUsers.remove(target);
+    }
+
+    // Verifys if a user is muted.
+    public boolean isMuted(String username) {
+        return mutedUsers.contains(username);
+    }
+
+
+    public boolean kickUser(String target) {
+        User user = connectedUsers.get(target);
+        if (user == null) {
+            return false;
+        }
+        try {
+            user.getSocket().close();
+        } catch (IOException e) {
+            System.err.println("Error kicking " + target + ": " + e.getMessage());
+        }
+        return true;
+    }
+
+    public boolean banUser(String target) {
+            bannedUsers.add(target);
+            return kickUser(target);
+    }
+
+    public boolean unbanUser(String target) {
+        return bannedUsers.remove(target);
     }
 
     // Runs the chat server
