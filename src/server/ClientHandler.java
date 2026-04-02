@@ -36,18 +36,19 @@ public class ClientHandler implements Runnable {
 
     private final ConcurrentHashMap<String, ChatRoom> rooms;
     private ChatRoom currentRoom;
-    private final Logger logger = new Logger();
+    private final Logger logger;
     private final ChatServer server;
 
     private static final int MAX_MESSAGE_LENGTH = 500; 
 
     public ClientHandler(Socket socket, ConcurrentHashMap<String, User> connectedUsers, 
-        ConcurrentHashMap<String, ChatRoom> rooms, ChatRoom defaultRoom, ChatServer server) {
+        ConcurrentHashMap<String, ChatRoom> rooms, ChatRoom defaultRoom, ChatServer server, Logger logger) {
         this.socket = socket;
         this.connectedUsers = connectedUsers;
         this.rooms = rooms;
         this.currentRoom = defaultRoom;
         this.server= server;
+        this.logger = logger;
     }
 
     // Main loop for handling client communication
@@ -293,7 +294,7 @@ public class ClientHandler implements Runnable {
         
         out.println("You joined " + roomName + ".");
         currentRoom.broadcastSystemMessage(Protocol.roomJoinMessage(username, roomName), username);
-        logger.log(currentRoom.getName(), username + "joined" + roomName);
+        logger.log(currentRoom.getName(), username + " joined " + roomName);
 
     }
 
@@ -428,8 +429,6 @@ public class ClientHandler implements Runnable {
  
             System.out.println(username + " has disconnected.");
         }
-        
-        logger.close();
         closeQuietly();
 
     }

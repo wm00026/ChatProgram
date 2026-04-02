@@ -40,6 +40,8 @@ public class ChatServer {
 
     private final ConcurrentHashMap<String, User> connectedUsers = new ConcurrentHashMap<>();
 
+    private final Logger logger = new Logger();
+
     private String adminUsername = null;
     private final Set<String> mutedUsers = ConcurrentHashMap.newKeySet();
     private final Set<String> bannedUsers = ConcurrentHashMap.newKeySet();
@@ -65,7 +67,7 @@ public class ChatServer {
                 System.out.println("New connection from: " + clientSocket.getInetAddress());
 
                 ChatRoom defaultRoom = rooms.get(DEFAULT_ROOM);
-                ClientHandler handler = new ClientHandler(clientSocket, connectedUsers, rooms, defaultRoom, this);
+                ClientHandler handler = new ClientHandler(clientSocket, connectedUsers, rooms, defaultRoom, this, logger);
                 threadPool.submit(handler);
             }
         } catch (IOException e) {
@@ -86,12 +88,12 @@ public class ChatServer {
                 threadPool.shutdownNow();
                 System.out.println("Thread pool forced to shutdown.");
             }
-            else {
-                System.out.println("Thread pool shutdown complete.");
-            }
         } catch (InterruptedException e) {
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
+        } finally {
+            logger.close();
+            System.out.println("Server shutdown complete.");
         }
     }
 

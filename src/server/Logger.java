@@ -8,9 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Logger
- * 
- * Stub for phase III implementation.
+ * Logger class to handle logging messages for each chat room. 
+ * It ensures thread safety when writing to log files and manages log file creation and access.
  */
 public class Logger {
     
