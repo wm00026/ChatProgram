@@ -1,6 +1,5 @@
 package server;
 
-import common.Message;
 import common.User;
 
 import java.io.IOException;
@@ -95,49 +94,6 @@ public class ChatServer {
             logger.close();
             System.out.println("Server shutdown complete.");
         }
-    }
-
-    /**
-     * Broadcasts a message to all connected users.
-     * Called by ClientHandler instance on the shared server context.
-     * @param message The message to broadcast.
-     * @param senderName the username to skip (so sender doesn't echo)
-     */
-
-    public void broadcast(Message message, String senderName) {
-        String formatted = message.format();
-        connectedUsers.forEach((username, user) -> {
-            if (!username.equals(senderName) && user.isActive()) {
-                user.getOut().println(formatted);
-            }
-         });
-    }
-
-    /**
-     * Sends a message to a specific user
-     * @param message the messege to sender
-     * @param recipient the person receiving the message
-     * @return
-     */
-    public boolean sendToUser(Message message, String recipient) {
-        User target = connectedUsers.get(recipient);
-        if (target == null || !target.isActive()) {
-            return false;
-        }
-
-        target.getOut().println(message.format());
-        return true;
-    }
-
-    // Gets the user list, separated by commas.
-    public String getUserList() {
-        if (connectedUsers.isEmpty()) {
-            return "No users connected.";
-        }
-
-        StringBuilder sb = new StringBuilder("Connected users: ");
-        sb.append(String.join(", ", connectedUsers.keySet()));
-        return sb.toString();
     }
 
     public ChatRoom getRoom(String roomName) {

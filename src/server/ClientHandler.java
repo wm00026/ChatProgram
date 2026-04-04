@@ -139,7 +139,7 @@ public class ClientHandler implements Runnable {
                 continue;
             }
 
-            username = candidate;
+            username = candidate.toLowerCase();
             return true;
         }
 
@@ -255,7 +255,7 @@ public class ClientHandler implements Runnable {
         String recipientName = parts[0];
         String whisperText = parts[1];
 
-        if (recipientName.equalsIgnoreCase(username)) { 
+        if (recipientName.equals(username)) { 
             out.println("You can't whisper to yourself!");
             return;
         }
@@ -314,7 +314,7 @@ public class ClientHandler implements Runnable {
             return;
         }
 
-        if (target.equalsIgnoreCase(username)) {
+        if (target.equals(username)) {
             out.println("You can't kick yourself");
             return;
         }

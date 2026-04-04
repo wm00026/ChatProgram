@@ -145,7 +145,7 @@ public class Protocol {
             return null; // No message content
         }
 
-        String recipient = content.substring(0, firstSpace).trim();
+        String recipient = content.substring(0, firstSpace).trim().toLowerCase();
         String whisperMessage = content.substring(firstSpace + 1).trim();
 
         if (recipient.isEmpty() || whisperMessage.isEmpty()) {
@@ -194,7 +194,7 @@ public class Protocol {
             return null;
         }
 
-        String target = input.substring(cmd.length()).trim();
+        String target = input.substring(cmd.length()).trim().toLowerCase();
         return target.isEmpty() ? null : target;
     }
 
