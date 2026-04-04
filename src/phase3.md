@@ -10,6 +10,10 @@ The goal of Phase III was to implement more features to flesh out the basic prog
 - Admin controls: Administrative commands (/kick, /mute, /ban) were created for an admin user. An admin user is the 1st user who joins the program. The admin can mute a user, preventing messages, kicking a user from the program, and banning a user from the program by banning the username.
 - GUI: Before, the program just worked within the terminal. This is not a bad thing, but for a "cleaner" look, a Swing GUI was implemented that creates a JFrame window on startup. It's a basic Swing GUI with a window for the chat and window for sending messages.
 
+<img width="1470" height="856" alt="Screenshot 2026-04-03 at 8 20 11 PM" src="https://github.com/user-attachments/assets/b6a6af4e-617b-48ac-bb48-a0c805817f5c" />
+* Image: A screenshot of the ChatClient.
+
+
 
 ## Where the Program Stands Now
 The program is at a functional state. The program can handle multiple users; users can whisper, create Chat rooms, and have admin commands. There is always new features and programs that can be added. Consider this the version 0.1; it works, but it isn't close to "final"...
