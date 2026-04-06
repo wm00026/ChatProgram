@@ -20,6 +20,7 @@ public class Protocol {
     public static final String MSG_BANNED_FORMAT = "[%s has been banned by %s]";
     public static final String MSG_MUTED_FORMAT = "[%s has been muted]";
     public static final String MSG_UNMUTED_FORMAT = "[%s has been unmuted]";
+    public static final String MSG_UNBANNED_FORMAT = "[%s has been unbanned]";
 
     // Commands
     public static final String CMD_LIST_USERS = "/list";
@@ -34,6 +35,7 @@ public class Protocol {
     public static final String CMD_BAN = "/ban";
     public static final String CMD_MUTE = "/mute";
     public static final String CMD_UNMUTE = "/unmute";
+    public static final String CMD_UNBAN = "/unban";
 
     // Username validation constants
     public static final int MIN_USERNAME_LENGTH = 3;
@@ -215,6 +217,7 @@ public class Protocol {
         help.append("  ").append(CMD_BAN).append(" <user> - Ban a user (admin only)\n");
         help.append("  ").append(CMD_MUTE).append(" <user> - Mute a user (admin only)\n");
         help.append("  ").append(CMD_UNMUTE).append(" <user> - Unmute a user (admin only)\n");
+        help.append("  ").append(CMD_UNBAN).append(" <user> - Unban a user (admin only)\n");
         return help.toString();
     }
 

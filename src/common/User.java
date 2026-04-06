@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 
 /**
  * User class
- * Sets username, socket used for connection, the PrintWriter,
+ * Sets username, socket used for connection, the I/O,
  * and active status.
  */
 public class User {

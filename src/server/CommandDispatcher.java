@@ -91,6 +91,11 @@ public class CommandDispatcher {
             return true;
         }
 
+        if (input.toLowerCase().startsWith(Protocol.CMD_UNBAN)) {
+            handleUnban(input);
+            return true;
+        }
+
         context.getOut().println(Protocol.errorMessage());
         return true;
     }
@@ -292,5 +297,29 @@ public class CommandDispatcher {
         out.println(String.format(Protocol.MSG_UNMUTED_FORMAT, target));
         context.getCurrentRoom().broadcastSystemMessage(
                 target + " has been unmuted.", username);
+    }
+
+    private void handleUnban(String input) {
+        PrintWriter out = context.getOut();
+        String username = context.getUsername();
+
+        if (!server.isAdmin(username)) {
+            out.println("You don't have permission to do that.");
+            return;
+        }
+
+        String target = Protocol.parseTargetCommand(input, Protocol.CMD_UNBAN);
+
+        if (target == null) {
+            out.println("Usage: /unban <username>");
+            return;
+        }
+
+        if (!server.unbanUser(target)) {
+            out.println("User '" + target + "' not found in ban list.");
+            return;
+        }
+
+        out.println(String.format(Protocol.MSG_UNBANNED_FORMAT, target));
     }
 }
