@@ -196,7 +196,6 @@ public class ClientHandler implements Runnable {
                 socket.close();
             }
         } catch (IOException e) {
-            // Nothing useful to do here.
         }
     }
 }

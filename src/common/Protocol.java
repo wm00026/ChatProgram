@@ -21,9 +21,11 @@ public class Protocol {
     public static final String MSG_MUTED_FORMAT = "[%s has been muted]";
     public static final String MSG_UNMUTED_FORMAT = "[%s has been unmuted]";
     public static final String MSG_UNBANNED_FORMAT = "[%s has been unbanned]";
+    public static final String MSG_TRANSFER_ADMIN_FORMAT = "[%s is now the admin]";
 
     // Commands
     public static final String CMD_LIST_USERS = "/list";
+    public static final String CMD_TRANSFER_ADMIN = "/transferadmin";
     public static final String CMD_LEAVE = "/quit";
     public static final String CMD_WHISPER = "/whisper"; // Stretch goal
     public static final String CMD_HELP = "/help";
@@ -218,6 +220,7 @@ public class Protocol {
         help.append("  ").append(CMD_MUTE).append(" <user> - Mute a user (admin only)\n");
         help.append("  ").append(CMD_UNMUTE).append(" <user> - Unmute a user (admin only)\n");
         help.append("  ").append(CMD_UNBAN).append(" <user> - Unban a user (admin only)\n");
+        help.append("  ").append(CMD_TRANSFER_ADMIN).append(" <user> - Transfer admin privileges (admin only)\n");
         return help.toString();
     }
 

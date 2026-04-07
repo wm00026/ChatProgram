@@ -96,6 +96,11 @@ public class CommandDispatcher {
             return true;
         }
 
+        if (input.toLowerCase().startsWith(Protocol.CMD_TRANSFER_ADMIN)) {
+            handleTransferAdmin(input);
+            return true;
+        }
+
         context.getOut().println(Protocol.errorMessage());
         return true;
     }
@@ -321,5 +326,42 @@ public class CommandDispatcher {
         }
 
         out.println(String.format(Protocol.MSG_UNBANNED_FORMAT, target));
+    }
+
+    public void handleTransferAdmin(String input) {
+        PrintWriter out = context.getOut();
+        String username = context.getUsername();
+
+        if (!server.isAdmin(username)) {
+            out.println("You don't have permission to do that.");
+            return;
+        }
+
+        String target = Protocol.parseTargetCommand(input, Protocol.CMD_TRANSFER_ADMIN);
+        if (target == null) {
+            out.println("Usage: /transferadmin <username>");
+            return;
+        }
+
+
+        if (target.equals(username)) {
+            out.println("You are already the admin.");
+            return;
+        }
+
+        User targetUser = connectedUsers.get(target);
+        if (targetUser == null) {
+            out.println("User '" + target + "' not found.");
+            return;
+        }
+
+        if (server.isBanned(target)) {
+            out.println("You can't transfer admin to a banned user.");
+            return;
+        }
+
+        server.transferAdmin(target);
+        out.println(String.format(Protocol.MSG_TRANSFER_ADMIN_FORMAT, target));
+        targetUser.getOut().println("You are now the admin");
     }
 }
