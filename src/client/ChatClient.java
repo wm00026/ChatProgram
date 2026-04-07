@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * ChatClient
@@ -125,7 +127,7 @@ public class ChatClient {
 
     private void appendMessage(String message) {
         SwingUtilities.invokeLater(() -> {
-            messageArea.append(message + "\n");
+            messageArea.append(DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now()) + " " + message + "\n");
             messageArea.setCaretPosition(messageArea.getDocument().getLength());
         });
     }

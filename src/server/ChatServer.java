@@ -1,6 +1,7 @@
 package server;
 
 import common.User;
+import server.ChatRoom;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -27,12 +28,12 @@ public class ChatServer {
 
     public ChatServer() {
         this.PORT = 12345;
-        rooms.put(DEFAULT_ROOM, new ChatRoom(DEFAULT_ROOM, connectedUsers));
+        rooms.put(DEFAULT_ROOM, new ChatRoom(DEFAULT_ROOM, connectedUsers, null));
     }
 
     public ChatServer(int port) {
         this.PORT = port;
-        rooms.put(DEFAULT_ROOM, new ChatRoom(DEFAULT_ROOM, connectedUsers));
+        rooms.put(DEFAULT_ROOM, new ChatRoom(DEFAULT_ROOM, connectedUsers, null));
     }
 
     // Shared user registry: username -> User object
@@ -107,8 +108,8 @@ public class ChatServer {
      * @return the existing or new ChatRoom instance
      */
    
-    public ChatRoom getOrCreateRoom(String roomName) {
-        return rooms.computeIfAbsent(roomName, name -> new ChatRoom(name, connectedUsers));
+    public ChatRoom getOrCreateRoom(String roomName, String password) {
+        return rooms.computeIfAbsent(roomName, name -> new ChatRoom(name, connectedUsers, password));
     }
 
     /**

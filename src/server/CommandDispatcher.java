@@ -158,14 +158,25 @@ public class CommandDispatcher {
         String username = context.getUsername();
         ChatRoom currentRoom = context.getCurrentRoom();
 
-        String roomName = Protocol.parseJoinCommand(input);
-        if (roomName == null) {
-            out.println("Usage: /join <roomname>");
+        String[] roomNameParts = Protocol.parseJoinCommand(input);
+        
+        if (roomNameParts == null) {
+            out.println("Usage: /join <roomname> [password]");
             return;
         }
 
+        String roomName = roomNameParts[0];
+        String password = roomNameParts[1]; // null if not provided
+
         if (roomName.equalsIgnoreCase(currentRoom.getName())) {
             out.println("You are already in room " + roomName + ".");
+            return;
+        }
+
+        // Check password if the room already exists
+        ChatRoom existingRoom = server.getRoom(roomName);
+        if (existingRoom != null && !existingRoom.checkPassword(password)) {
+            out.println("Incorrect password for room '" + roomName + "'.");
             return;
         }
 
@@ -173,7 +184,7 @@ public class CommandDispatcher {
         currentRoom.broadcastSystemMessage(Protocol.roomLeaveMessage(username, oldRoomName), username);
         currentRoom.removeMember(username);
 
-        ChatRoom newRoom = server.getOrCreateRoom(roomName);
+        ChatRoom newRoom = server.getOrCreateRoom(roomName, password);
         newRoom.addMember(username);
         context.setCurrentRoom(newRoom);
 

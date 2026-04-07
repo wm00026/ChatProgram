@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatRoom {
 
     private final String name;
+    
+    private String password = null;
 
     private final Set<String> memberNames = ConcurrentHashMap.newKeySet();
 
@@ -28,10 +30,12 @@ public class ChatRoom {
      * 
      * @param name
      * @param connectedUsers
+     * @param password
      */
-    public ChatRoom(String name, ConcurrentHashMap<String, User> connectedUsers) {
+    public ChatRoom(String name, ConcurrentHashMap<String, User> connectedUsers, String password) {
         this.name = name;
         this.connectedUsers = connectedUsers;
+        this.password = password;
     }
 
     // === Member Management ===
@@ -89,6 +93,21 @@ public class ChatRoom {
         return name;
     }
 
+    /**
+     * Validates the provided password against this room's password.
+     * If the room has no password, access is allowed.
+     * 
+     * @param password the password to check
+     * @return true if access is allowed, false if password is incorrect
+     */
+    public boolean checkPassword(String password) {
+        // If room has no password, allow access
+        if (this.password == null) {
+            return true;
+        }
+        // If room has password, require it to match
+        return this.password.equals(password);
+    }
 
 
     

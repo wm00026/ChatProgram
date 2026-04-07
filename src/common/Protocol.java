@@ -180,17 +180,32 @@ public class Protocol {
     }
 
     /**
-     * parses a join command to extract the room name.
+     * Parses a join command to extract the room name and optional password.
      * @param input the full command input from the user
-     * @return the room name if the command is valid, or null if its invalid or missing roomName.
+     * @return String array with [roomName, password] where password is null if not provided,
+     * or null if the command is invalid or missing room name
      */
-    public static String parseJoinCommand(String input) {
+    public static String[] parseJoinCommand(String input) {
         if (input == null || !input.toLowerCase().startsWith(CMD_JOIN)) {
             return null;
         }
 
-        String roomName = input.substring(CMD_JOIN.length()).trim();
-        return roomName.isEmpty() ? null : roomName;
+        String content = input.substring(CMD_JOIN.length()).trim();
+
+        if (content.isEmpty()) {
+            return null; // No room name provided
+        }
+
+        // Split by space to get room name and optional password
+        String[] parts = content.split("\\s+", 2); // Limit to 2 parts
+        String roomName = parts[0].trim();
+        String password = parts.length > 1 ? parts[1].trim() : null;
+
+        if (roomName.isEmpty()) {
+            return null; // Room name cannot be empty
+        }
+
+        return new String[]{roomName, password};
     }
 
     public static String parseTargetCommand(String input, String cmd) {
