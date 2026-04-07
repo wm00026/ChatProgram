@@ -133,6 +133,11 @@ public class ChatServer {
         }
     }
 
+    public synchronized void transferAdmin(String newAdmin) {
+            adminUsername = newAdmin;
+            System.out.print("Admin transferred to: " + newAdmin);
+    }
+
     // Verifys if a given username is the current admin
     public boolean isAdmin(String username) {
         return username != null && username.equals(adminUsername);
