@@ -1,7 +1,6 @@
 package server;
 
 import common.User;
-import server.ChatRoom;
 
 import java.io.IOException;
 import java.net.ServerSocket;
